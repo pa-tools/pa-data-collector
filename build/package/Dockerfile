@@ -7,7 +7,7 @@ COPY go.mod go.sum ./
 RUN go mod download -x && go mod verify
 
 COPY . .
-RUN go build -v -o /main cmd/pa-data-collector/main.go
+RUN go build -v -o /main ./cmd/pa-data-collector/main.go
 
 FROM scratch
 ENV ADMIN_TOKEN=changeme
