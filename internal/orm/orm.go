@@ -1,6 +1,8 @@
-package main
+package orm
 
 import (
+	"github.com/pa-tools/pa-data-collector/internal/shared"
+
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
@@ -11,17 +13,17 @@ var (
 
 type Device struct {
 	gorm.Model
-	PaDevice PaDevice `gorm:"embedded"`
+	PaDevice shared.PaDevice `gorm:"embedded"`
 	Entries  []Entry
 }
 
 type Entry struct {
 	gorm.Model
-	PaEntry  PaEntry `gorm:"embedded"`
+	PaEntry  shared.PaEntry `gorm:"embedded"`
 	DeviceId uint
 }
 
-func initDb() {
+func InitDb() {
 	var err error
 	db, err = gorm.Open(sqlite.Open("data.db"), &gorm.Config{})
 	if err != nil {
