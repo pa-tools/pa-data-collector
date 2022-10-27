@@ -10,5 +10,7 @@ COPY . .
 RUN go build -v -o /main cmd/pa-data-collector/main.go
 
 FROM scratch
+ENV ADMIN_TOKEN=changeme
+ENV PORT=3000
 COPY --from=build /main /main
 ENTRYPOINT [ "/main" ]
