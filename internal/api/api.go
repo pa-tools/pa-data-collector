@@ -3,6 +3,7 @@ package api
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/spf13/viper"
 )
 
 var (
@@ -15,6 +16,9 @@ func InitApi() {
 
 	// Route Handlers
 	app.Post("/post", parsePaPost)
+	app.Get("/devices", getDevices)
 
-	app.Listen(":3000")
+	viper.SetDefault("port", 3000)
+	viper.BindEnv("port")
+	app.Listen(":" + viper.GetString("port"))
 }
