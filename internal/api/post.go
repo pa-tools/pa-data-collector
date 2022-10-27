@@ -1,30 +1,16 @@
-package main
+package api
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/pa-tools/pa-data-collector/internal/orm"
+	"github.com/pa-tools/pa-data-collector/internal/shared"
 )
-
-var (
-	app *fiber.App
-)
-
-func initApi() {
-	app = fiber.New()
-	app.Use(logger.New())
-
-	// Route Handlers
-	app.Post("/post", parsePaPost)
-
-	app.Listen(":3000")
-}
 
 type postInput struct {
-	PaDevice
-	PaEntry
+	shared.PaDevice
+	shared.PaEntry
 }
 
 func parsePaPost(c *fiber.Ctx) error {
@@ -34,19 +20,19 @@ func parsePaPost(c *fiber.Ctx) error {
 		log.Print(err.Error())
 		return c.SendStatus(400)
 	}
-	deviceData := Device{
+	deviceData := orm.Device{
 		PaDevice: body.PaDevice,
 	}
 	// check if device exists, create if not
-	var dbDevice Device
-	deviceResult := db.Where("mac_address = ?", body.MacAddress).First(&dbDevice)
+	var dbDevice orm.Device
+	deviceResult := orm.Where("mac_address = ?", body.MacAddress).First(&dbDevice)
 	if deviceResult.Error != nil {
 		if deviceResult.Error.Error() == "record not found" {
-			createResult := db.Create(&deviceData)
+			createResult := orm.Create(&deviceData)
 			if createResult.Error != nil {
 				return createResult.Error
 			}
-			fmt.Printf("Created Device record: %d\n", deviceData.ID)
+			log.Printf("Created Device record: %d\n", deviceData.ID)
 			dbDevice = deviceData
 		} else {
 			log.Printf("Error creating device in database: %s", deviceResult.Error.Error())
@@ -54,11 +40,11 @@ func parsePaPost(c *fiber.Ctx) error {
 		}
 	}
 
-	entryData := Entry{
+	entryData := orm.Entry{
 		PaEntry:  body.PaEntry,
 		DeviceId: dbDevice.ID,
 	}
-	createEntry := db.Create(&entryData)
+	createEntry := orm.Create(&entryData)
 	if createEntry.Error != nil {
 		log.Printf("Error creating device in database: %s", createEntry.Error.Error())
 		return c.SendStatus(400)
